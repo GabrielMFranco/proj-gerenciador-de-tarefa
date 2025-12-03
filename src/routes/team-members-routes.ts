@@ -11,7 +11,6 @@ teamMemberRoutes.post("/",
     verifyUserAuthorization(["admin"]),
     teamMembersController.create, 
 )
-teamMemberRoutes.get("/:id", teamMembersController.index)
 teamMemberRoutes.delete("/:id",
     ensureAuthenticated,
     verifyUserAuthorization(["admin"]),

@@ -37,11 +37,26 @@ export class TeamMembersController{
         return response.json()
     }
 
-    async index(request: Request, response: Response){
-        return response.json()
-    }
-
     async remove(request: Request, response: Response){
-        return response.json()
+        const { id } = request.params
+        const teamMemberId = Number(id)
+
+        if (isNaN(teamMemberId)) {
+            throw new AppError("Invalid member_id", 400);
+        }
+
+        const verify = await prisma.team_member.findUnique({
+            where: { id: teamMemberId }
+        })
+
+        if(!verify){
+            throw new AppError("member not found", 404)
+        }
+
+        await prisma.team_member.delete({
+            where: { id: teamMemberId }
+        })
+
+        return response.json({ message: "removed member from team"})
     }
 }
