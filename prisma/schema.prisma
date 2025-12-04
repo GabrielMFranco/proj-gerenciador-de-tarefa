@@ -80,7 +80,7 @@ model Team_member {
 model Task {
   id          Int      @id @default(autoincrement())
   title       String   @db.VarChar(200)
-  description String
+  description String?
   status      Status
   priority    Priority
   assigned_to Int
