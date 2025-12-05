@@ -166,6 +166,8 @@ export class TasksController{
             }
         }
 
+        const oldStatus = hasTask.status
+
         const bodySchema = z.object({
             title: z.string().optional(),
             description: z.string().nullable().optional(),
@@ -198,6 +200,17 @@ export class TasksController{
             data: dataToUpdate,
         })
 
+        if(status !== undefined){
+            await prisma.task_history.create({
+                data: {
+                    task_id: taskId,
+                    changed_by: Number(userId),
+                    old_status: oldStatus,
+                    new_status: status 
+                }
+            })
+        }
+        
         return response.json({message: "updated successfully"})
     }
 }

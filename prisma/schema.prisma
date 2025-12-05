@@ -31,7 +31,7 @@ enum Old_status {
 }
 
 enum New_status {
-  ending
+  pending
   in_progress
   completed
 }
