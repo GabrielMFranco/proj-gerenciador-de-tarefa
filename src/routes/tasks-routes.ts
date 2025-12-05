@@ -28,3 +28,8 @@ tasksRoutes.get(
     ensureAuthenticated,
     tasksController.show
 )
+tasksRoutes.patch(
+    "/:id",
+    ensureAuthenticated,
+    tasksController.patch
+)

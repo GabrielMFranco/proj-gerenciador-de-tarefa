@@ -8,6 +8,7 @@ export class TasksController{
         const bodySchema = z.object({
             title: z.string(),
             description: z.string().nullable().optional(),
+            status: z.enum([ "pending", "in_progress", "completed" ]).default("pending"), 
             priority: z.enum([ "high","medium","low" ]),
             assigned_to: z.int(),
             team_id: z.int(),
@@ -137,5 +138,66 @@ export class TasksController{
         })
 
         return response.json({message: "deleted successfully"})
+    }
+
+    async patch(request: Request, response: Response){
+        const userId = request.user?.id
+        const userRole = request.user?.role
+
+        const { id } = request.params
+        const taskId = Number(id)
+        
+        if (isNaN(taskId)) {
+            throw new AppError("invalid task id", 400)
+        }
+
+        const hasTask = await prisma.task.findFirst({
+            where: { id: taskId }
+        })
+
+        if(!hasTask){
+            throw new AppError("task_id not found", 404)
+        }
+
+        if(userRole !== "admin"){
+            const verify = hasTask.assigned_to === Number(userId)
+            if(!verify){
+                throw new AppError("no permission to edit", 401)
+            }
+        }
+
+        const bodySchema = z.object({
+            title: z.string().optional(),
+            description: z.string().nullable().optional(),
+            status: z.enum([ "pending", "in_progress", "completed" ]).optional(),
+            priority: z.enum([ "high","medium","low" ]).optional(),
+            assigned_to: z.int().optional(),
+            team_id: z.int().optional(),
+        })
+
+        const { title, description, priority, status, assigned_to, team_id }
+         = bodySchema.parse(request.body)
+
+        const dataToUpdate = {
+            title,
+            description,
+            priority,
+            status,
+            assigned_to,
+            team_id,
+        }
+
+        const hasAnyField = Object.values(dataToUpdate).some(value => value !== undefined)
+
+        if (!hasAnyField) {
+            throw new AppError("No fields provided to update", 400)
+        }
+
+        await prisma.task.update({
+            where: { id: taskId },
+            data: dataToUpdate,
+        })
+
+        return response.json({message: "updated successfully"})
     }
 }
